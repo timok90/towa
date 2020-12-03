@@ -11,8 +11,7 @@ class MySqliteDb(object):
         self._create_connection(
             "C:\\Users\\timok\\Desktop\\TOWA\\Python\\sqlite\\pysqlite.db")
         self._create_cursor()
-
-        self.string_createLoggingTable = self._sql_command_createLoggingTable()
+        self.string_createLoggingTable = ""
 
     def __del__(self):
         try:
@@ -51,7 +50,10 @@ class MySqliteDb(object):
             # create the table
             try:
                 cursor = self.cursor
+                self.string_createLoggingTable = self._sql_command_createLoggingTable(
+                    tablename)
                 cursor.execute(self.string_createLoggingTable)
+                self.connection.commit()
                 self.logging_table = True
 
                 msg = f"Table {tablename} was created"
@@ -63,8 +65,8 @@ class MySqliteDb(object):
             msg = f"table {tablename} already exists"
             print(msg)
 
-    def _sql_command_createLoggingTable(self):
-        sql_String = """CREATE TABLE IF NOT EXISTS logging (
+    def _sql_command_createLoggingTable(self, tablename):
+        sql_String = f"""CREATE TABLE IF NOT EXISTS {tablename} (
             remote_ip TEXT,
             timestamp INTEGER,
             protocol TEXT,
@@ -74,7 +76,27 @@ class MySqliteDb(object):
              );"""
         return sql_String
 
+    def _insert_logging_data(self, tablename, logging_data: dict):
+        columns = ",".join(logging_data.keys())
+        quest_str = ["?" for x in range(len(logging_data))]
+        valu_string = ",".join(quest_str)
+
+        values = [logging_data[x] for x in logging_data.keys()]
+
+        sql_string = f""" INSERT INTO {tablename} ({columns}) VALUES({valu_string}) """
+
+        try:
+            self.cursor.execute(sql_string, values)
+            self.connection.commit()
+        except sqlite3.Error as e:
+            raise e
+
+        return None
+
 
 if __name__ == '__main__':
     db = MySqliteDb()
     db.create_logging_table("LoggingTable")
+
+    testdata = {"remote_ip": "127.1", "host": 123}
+    db._insert_logging_data("LoggingTable", logging_data=testdata)
