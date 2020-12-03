@@ -59,9 +59,7 @@ class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
         protocol = str(self.get_protocol())
         host = self.get_host()
         host = self.serverAdress
-        # url = urlparse(self.path)
         path = urlparse(self.path).path
-        # path = self.path.rsplit("/", 1)[0]
         query = json.dumps(parse_qs(urlparse(self.path).query))
 
         log_data = {
@@ -74,7 +72,6 @@ class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
         }
 
         print(log_data)
-        # print(self.get_host())
         return log_data
 
     def get_ip_client(self):
@@ -103,12 +100,6 @@ def myHttpServer():
     handler_object.serverAdress = myserver.server_address[0]
     print("server adress: ", myserver.server_address)
     myserver.serve_forever()
-
-    # with socketserver.TCPServer(("", PORT), handler_object) as myserver:
-    #     # Start server
-    #     print("server adress: ", myserver.server_address)
-    #     handler_object.ser
-    #     myserver.serve_forever()
 
 
 if __name__ == "__main__":
