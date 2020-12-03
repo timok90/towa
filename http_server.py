@@ -39,11 +39,13 @@ class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(bytes(html, "utf8"))
         return None
 
-    def get_ip_client(self):
-        # get the ip adress of the client
-        return self.client_address[0]
+    def _insert_logdata(self):
+        log_data = self._get_logging_data()
+        self.db._insert_logging_data(log_data)
+        return log_data
 
-    def _get_logging_data(self):
+    def _get_logging_data(self) -> dict:
+        """ Returns the data to log the client addressing the server"""
         # get the ip adress of the client
         user_ip = self.get_ip_client()
         timestamp = int(datetime.utcnow().timestamp())
@@ -64,10 +66,9 @@ class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
         print(log_data)
         return log_data
 
-    def _insert_logdata(self):
-        log_data = self._get_logging_data()
-        self.db._insert_logging_data(log_data)
-        return log_data
+    def get_ip_client(self):
+        # get the ip adress of the client
+        return self.client_address[0]
 
 
 def myHttpServer():
