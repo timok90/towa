@@ -19,8 +19,13 @@ class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
         if 'name' in query_components:
             name = query_components['name'][0]
 
+        # get the ip adress of the client
+        client_address = self.client_address[0]
+
+        headers = self.headers
+
         # create html code
-        html = f"<html><head></head><body><h1>Hello {name}!</h1></body></html>"
+        html = f"<html><head></head><body><h1>Hello {name}! {client_address}  and the headers: {headers}</h1></body></html>"
 
         # write the html code
         self.wfile.write(bytes(html, "utf8"))
