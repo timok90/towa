@@ -1,10 +1,12 @@
 import http.server
 import socketserver
 from urllib.parse import urlparse, parse_qs
+from database import MySqliteDb
 
 
 class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
+
         #send ok response
         self.send_response(200)
 
@@ -32,11 +34,21 @@ class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
         return None
 
 
-# create the handler obj
-handler_object = MyHttpRequestHandler
+def myHttpServer():
 
-PORT = 8000
+    # create db
+    db = MySqliteDb()
+    db.create_logging_table("LoggingTable")
 
-with socketserver.TCPServer(("", PORT), handler_object) as myserver:
-    # Start server
-    myserver.serve_forever()
+    # create the handler obj
+    handler_object = MyHttpRequestHandler
+
+    PORT = 8000
+
+    with socketserver.TCPServer(("", PORT), handler_object) as myserver:
+        # Start server
+        myserver.serve_forever()
+
+
+if __name__ == "__main__":
+    myHttpServer()
