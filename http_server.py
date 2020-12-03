@@ -1,18 +1,23 @@
 import http.server
 import socketserver
+import socket
 from urllib.parse import urlparse, parse_qs
 from database import MySqliteDb
 from datetime import datetime
+import json
 
 
 class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.db = None
+        self.serverAdress = ""
 
     def do_GET(self):
         # Log the data
         self._insert_logdata()
+        query = parse_qs(urlparse(self.path).query)
+        print(query)
 
         if self.path == "/":
             #send ok response
@@ -51,13 +56,16 @@ class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
         # get the ip adress of the client
         user_ip = self.get_ip_client()
         timestamp = int(datetime.utcnow().timestamp())
-        protocol = self.get_protocol()
-        host = "host"
-        path = "path"
-        query = "query"
+        protocol = str(self.get_protocol())
+        host = self.get_host()
+        host = self.serverAdress
+        # url = urlparse(self.path)
+        path = urlparse(self.path).path
+        # path = self.path.rsplit("/", 1)[0]
+        query = json.dumps(parse_qs(urlparse(self.path).query))
 
         log_data = {
-            "user_ip": user_ip,
+            "remote_ip": user_ip,
             "timestamp": timestamp,
             "protocol": protocol,
             "host": host,
@@ -66,7 +74,7 @@ class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
         }
 
         print(log_data)
-        print(self.get_host())
+        # print(self.get_host())
         return log_data
 
     def get_ip_client(self):
@@ -77,7 +85,7 @@ class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
         return self.protocol_version
 
     def get_host(self):
-        return self.requestline
+        return urlparse(self.path).netloc
 
 
 def myHttpServer():
@@ -91,9 +99,16 @@ def myHttpServer():
     handler_object.db = db
     PORT = 8000
 
-    with socketserver.TCPServer(("", PORT), handler_object) as myserver:
-        # Start server
-        myserver.serve_forever()
+    myserver = socketserver.TCPServer(("", PORT), handler_object)
+    handler_object.serverAdress = myserver.server_address[0]
+    print("server adress: ", myserver.server_address)
+    myserver.serve_forever()
+
+    # with socketserver.TCPServer(("", PORT), handler_object) as myserver:
+    #     # Start server
+    #     print("server adress: ", myserver.server_address)
+    #     handler_object.ser
+    #     myserver.serve_forever()
 
 
 if __name__ == "__main__":
