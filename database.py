@@ -8,9 +8,11 @@ class MySqliteDb(object):
         self.cursor = None
         self.logging_table = False
 
-        self._create_connection()
+        self._create_connection(
+            "C:\\Users\\timok\\Desktop\\TOWA\\Python\\sqlite\\pysqlite.db")
         self._create_cursor()
 
+        self.string_createLoggingTable = self._sql_command_createLoggingTable()
 
     def __del__(self):
         try:
@@ -34,6 +36,7 @@ class MySqliteDb(object):
     def _create_cursor(self):
         """Creates Cursor object for sqlite db """
         try:
+            self.cursor = self.connection.cursor()
 
         except sqlite3.Error as e:
             raise e
@@ -47,15 +50,32 @@ class MySqliteDb(object):
         if not self.logging_table:
             # create the table
             try:
-                cursor = self.connection.cursor()
+                cursor = self.cursor
+                cursor.execute(self.string_createLoggingTable)
+                self.logging_table = True
+
+                msg = f"Table {tablename} was created"
+                print(msg)
+            except sqlite3.Error as e:
+                raise e
 
         else:
             msg = f"table {tablename} already exists"
-            return msg
+            print(msg)
+
+    def _sql_command_createLoggingTable(self):
+        sql_String = """CREATE TABLE IF NOT EXISTS logging (
+            remote_ip TEXT,
+            timestamp INTEGER,
+            protocol TEXT,
+            host TEXT,
+            path TEXT,
+            query BLOB
+             );"""
+        return sql_String
 
 
 if __name__ == '__main__':
     db = MySqliteDb()
-    db.create_connection(
-        'C:\\Users\\timok\\Desktop\\TOWA\\Python\\sqlite\\pysqlite.db')
+    db.create_logging_table("LoggingTable")
     db.create_logging_table("LoggingTable")
