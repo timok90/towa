@@ -7,6 +7,7 @@ class MySqliteDb(object):
         self.connection = None
         self.cursor = None
         self.logging_table = False
+        self.tablename = None
 
         self._create_connection(
             "C:\\Users\\timok\\Desktop\\TOWA\\Python\\sqlite\\pysqlite.db")
@@ -55,6 +56,7 @@ class MySqliteDb(object):
                 cursor.execute(self.string_createLoggingTable)
                 self.connection.commit()
                 self.logging_table = True
+                self.tablename = tablename
 
                 msg = f"Table {tablename} was created"
                 print(msg)
