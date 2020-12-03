@@ -6,8 +6,9 @@ from datetime import datetime
 
 
 class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
-    def __init__(self, dbInstance: MySqliteDb):
-        self.db = dbInstance
+    def __init__(self):
+        super().__init__()
+        self.db = None
 
     def do_GET(self):
         # Log the data
@@ -41,7 +42,8 @@ class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
 
     def _insert_logdata(self):
         log_data = self._get_logging_data()
-        self.db._insert_logging_data(log_data)
+        self.db._insert_logging_data(tablename=self.db.tablename,
+                                     logging_data=log_data)
         return log_data
 
     def _get_logging_data(self) -> dict:
@@ -49,7 +51,7 @@ class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
         # get the ip adress of the client
         user_ip = self.get_ip_client()
         timestamp = int(datetime.utcnow().timestamp())
-        protocol = "dummy"
+        protocol = self.get_protocol()
         host = "host"
         path = "path"
         query = "query"
@@ -64,11 +66,18 @@ class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
         }
 
         print(log_data)
+        print(self.get_host())
         return log_data
 
     def get_ip_client(self):
         # get the ip adress of the client
         return self.client_address[0]
+
+    def get_protocol(self):
+        return self.protocol_version
+
+    def get_host(self):
+        return self.requestline
 
 
 def myHttpServer():
@@ -78,8 +87,8 @@ def myHttpServer():
     db.create_logging_table("LoggingTable")
 
     # create the handler obj
-    handler_object = MyHttpRequestHandler(db)
-
+    handler_object = MyHttpRequestHandler
+    handler_object.db = db
     PORT = 8000
 
     with socketserver.TCPServer(("", PORT), handler_object) as myserver:
