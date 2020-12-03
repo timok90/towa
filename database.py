@@ -70,12 +70,11 @@ class MySqliteDb(object):
             protocol TEXT,
             host TEXT,
             path TEXT,
-            query BLOB
+            query JSON
              );"""
         return sql_String
 
 
 if __name__ == '__main__':
     db = MySqliteDb()
-    db.create_logging_table("LoggingTable")
     db.create_logging_table("LoggingTable")
