@@ -19,7 +19,7 @@ class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
         query = parse_qs(urlparse(self.path).query)
         print(query)
 
-        if self.path == "/":
+        if self.path:
             #send ok response
             self.send_response(200)
 
@@ -39,7 +39,7 @@ class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
             client_address = self.get_ip_client()
 
             # create html code
-            html = f"<html><head></head><body><h1>Hello {name}! {client_address}  and the headers: {headers}</h1></body></html>"
+            html = f"<html><head></head><body><h1>Hello {name}!</h1> <p>{client_address}  and the headers: {headers}</p></body></html>"
 
             # write the html code
             self.wfile.write(bytes(html, "utf8"))
